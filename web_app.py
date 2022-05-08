@@ -1,4 +1,5 @@
 import streamlit as st
+
 from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 from st_aggrid import GridUpdateMode, DataReturnMode
@@ -35,7 +36,7 @@ class Application:
         footer {visibility: hidden;}
         </style> """, unsafe_allow_html=True)
 
-    def aggrid_dataframe(self, table: [Providers, Storage, Customers]):
+    def aggrid_dataframe(self, table: [Providers, Storage, Customers, Shipment, Purchases]):
         values, columns = table.get_table()
         df = pd.DataFrame(values, columns=columns)
         gb = GridOptionsBuilder.from_dataframe(df)
@@ -55,7 +56,7 @@ class Application:
             fit_columns_on_grid_load=False
         )
 
-    def set_sidebar(self):
+    def sidebar(self):
         with st.sidebar:
             selected_table = st.sidebar.selectbox(
                 'Выберите таблицу',
@@ -76,30 +77,40 @@ class Application:
                 st.write(info)
             return table
 
+    def edit(self):
+        selected_table = app.sidebar()
+
+        selection = app.aggrid_dataframe(selected_table)['selected_rows']
+
+        if selection and st.button(label='Удалить выбранные строки'):
+            try:
+                rows_to_delete = [str(selected[value]) for selected in selection for value in selected if
+                                  value.endswith('_id')]
+                rows_to_delete = ','.join(rows_to_delete)
+                selected_table.delete(f"{selected_table.primary_key} in ({rows_to_delete})")
+                st.experimental_rerun()
+            except Exception:
+                pass
+
+
+        with st.form(key='form'):
+            input_values = dict.fromkeys(selected_table.columns)
+            for index, col in enumerate(st.columns(len(selected_table.columns))):
+                with col:
+                    input_cell = \
+                        st.text_input(label=f'{selected_table.columns[index]}', key=index)
+                    input_values[selected_table.columns[index]] = input_cell
+            if st.form_submit_button(label='Добавить'):
+                try:
+                    input_values = ','.join(list(input_values.values())).split(',')
+                    selected_table.add([(input_values)])
+                    st.experimental_rerun()
+                except Exception as e:
+                    st.write(f'Input value is incorrect for {selected_table.table_name}', e)
+
 
 if __name__ == '__main__':
     app = Application()
     app.set_config()
+    app.edit()
 
-    selected_table = app.set_sidebar()
-
-    selection = app.aggrid_dataframe(selected_table)['selected_rows']
-
-    if selection and st.button(label='Удалить выбранные строки'):
-        rows_to_delete = [str(selected[value]) for selected in selection for value in selected if value.endswith('_id')]
-        rows_to_delete = ','.join(rows_to_delete)
-        selected_table.delete(f"{selected_table.primary_key} in ({rows_to_delete})")
-
-    with st.form(key='form'):
-        input_values = dict.fromkeys(selected_table.columns)
-        for index, col in enumerate(st.columns(len(selected_table.columns))):
-            with col:
-                input_cell = \
-                    st.text_input(label=f'{selected_table.columns[index]}', key=index)
-                input_values[selected_table.columns[index]] = input_cell
-        if st.form_submit_button(label='Добавить'):
-            try:
-                input_values = ','.join(list(input_values.values())).split(',')
-                selected_table.add([(input_values)])
-            except Exception as e:
-                st.write(f'Input value is incorrect for {selected_table.table_name}', e)
