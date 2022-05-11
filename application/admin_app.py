@@ -10,7 +10,7 @@ from database.shipment import Shipment
 from database.storage import Storage
 from database.database import get_connection
 # from web_app import CONNECTION
-from application.application import Application
+from application.base_app import Application
 
 
 

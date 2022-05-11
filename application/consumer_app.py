@@ -4,10 +4,11 @@ import streamlit as st
 
 from database.storage import Storage
 from database.database import get_connection
-from application.application import Application
+from application.base_app import Application
 
 import numpy as np
 import extra_streamlit_components as stx
+import pandas as pd
 
 
 @st.experimental_singleton
@@ -16,7 +17,11 @@ class Cart:
         self.shopping_list = []
 
 
-class ConsumerApplication:
+class ConsumerApplication(Application):
+    def __init__(self):
+        self.username = st.session_state['username']
+        self.shopping_list = Cart().shopping_list
+
     def run(self):
         selected_category = self.sidebar()
         self.catalog(selected_category)
@@ -24,12 +29,19 @@ class ConsumerApplication:
 
     def sidebar(self):
         with st.sidebar:
+            if st.button(label='Выход'):
+                # self.cookie_manager.delete(self.cookie_name)
+                st.session_state['logout'] = True
+                st.session_state['name'] = None
+                st.session_state['username'] = None
+                st.session_state['authentication_status'] = None
+            #     Application.authorize()
             st.subheader(st.session_state['name'])
             selected_category = st.sidebar.selectbox(
                 'Выберите категорию',
                 list(set([category[0] for category in
                           Storage(get_connection()).select_from_table('category').fetchall()])),
-                key=hash('sidebar')
+                key=hash('sidebar-select-box')
             )
             return selected_category
 
@@ -44,22 +56,23 @@ class ConsumerApplication:
                 st.subheader(product[0])
                 st.write(product[1])
                 if st.button(label='В корзину', key=hash(product[0])) and product[0] not in Cart().shopping_list:
-                    Cart().shopping_list.append(product[0])
+                    self.shopping_list.append(product[0])
 
     def cart(self):
         with st.sidebar:
-            for item in Cart().shopping_list:
+            for value in self.shopping_list:
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.write(item)
+                    st.markdown('&nbsp;')
+                    st.write(value)
                 with col2:
-                    if st.button(label='X', key=str(item)):
-                        Cart().shopping_list.remove(item)
-                        st.experimental_rerun()
+                    number = st.number_input(label='', min_value=0, value=1, key=value)
             if st.button(label='Оформить заказ', key=hash('оформление заказа')):
                 self.order()
 
     def order(self):
-        order_time = st.date_input("Выберите дату доставки", datetime.datetime.now())
-        if st.button('Подтвердить'):
-            st.success('Заказ успешно оформлен')
+        with st.form(key='order-form'):
+            order_time = st.date_input(label="Выберите дату доставки", min_value=datetime.datetime.now())
+            st.text_input(label='Адрес доставки')
+            if st.form_submit_button('Подтвердить'):
+                st.success('Заказ успешно оформлен')
