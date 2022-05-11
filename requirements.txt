@@ -3,3 +3,4 @@ streamlit~=1.8.1
 numpy~=1.22.3
 streamlit-aggrid
 streamlit-authenticator~=0.1.4
+singleton-decorator
