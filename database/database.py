@@ -22,7 +22,7 @@ class Database:
             cur = con.cursor()
             cur.executemany(
                 f"INSERT INTO {self.table_name} {*self.__get_columns()[1:],} "
-                f"values({'?,' * (len(self.__get_columns()[1:]) - 1)} ?)",
+                f"values({'?,' * (len(self.__get_columns()[1:]) - 1)}?)",
                 values)
 
     def delete(self, condition):
@@ -44,7 +44,7 @@ class Database:
         with sq.connect('electronics.db') as con:
             return f'Первичный ключ: {self.primary_key}', \
                    f'Количество строк: {self.__get_table_len()}', \
-                   'Типы данных столбцов', self.__get_column_types()
+                   f'Типы данных столбцов: {self.__get_column_types()}'
 
     def __get_table_len(self):
         with sq.connect('electronics.db') as con:
