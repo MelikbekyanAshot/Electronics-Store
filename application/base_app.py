@@ -19,6 +19,7 @@ class Application:
         """Configurate web-site settings."""
         st.set_page_config(page_title='Курсовая',
                            page_icon='K')
+        st.write('<style>div.block-container{padding-top:2rem;}</style>', unsafe_allow_html=True)
         st.markdown(""" <style>#MainMenu {visibility: hidden;}footer {visibility: hidden;}</style> """, unsafe_allow_html=True)
         st.markdown('''<style>button[title="View fullscreen"]{visibility: hidden;}</style>''', unsafe_allow_html=True)
         st.write('<style>div.row-widget.stRadio > div{flex-direction:row;}</style>', unsafe_allow_html=True)

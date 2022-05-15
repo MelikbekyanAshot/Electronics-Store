@@ -21,8 +21,8 @@ class Database:
         with sq.connect('electronics.db') as con:
             cur = con.cursor()
             cur.executemany(
-                f"INSERT INTO {self.table_name} {*self.__get_columns()[1:],} "
-                f"values({'?,' * (len(self.__get_columns()[1:]) - 1)}?)",
+                f"INSERT INTO {self.table_name} {*self.get_columns()[1:],} "
+                f"values({'?,' * (len(self.get_columns()[1:]) - 1)}?)",
                 values)
 
     def delete(self, condition):
@@ -34,11 +34,11 @@ class Database:
             except Exception:
                 pass
 
-    def select_from_table(self, columns='*', condition='TRUE'):
+    def select_from_table(self, columns='*', where='TRUE'):
         """"""
         with sq.connect('electronics.db') as con:
             cur = con.cursor()
-            return cur.execute(f'SELECT {columns} FROM {self.table_name} WHERE {condition}')
+            return cur.execute(f'SELECT {columns} FROM {self.table_name} WHERE {where}')
 
     def table_info(self):
         with sq.connect('electronics.db') as con:
@@ -51,7 +51,7 @@ class Database:
             cur = con.cursor()
             return cur.execute(f'SELECT COUNT(*) FROM {self.table_name}').fetchone()[0]
 
-    def __get_columns(self):
+    def get_columns(self):
         with sq.connect('electronics.db') as con:
             cur = con.cursor()
             return list(map(lambda x: x[0], cur.execute(f'select * from {self.table_name}').description))

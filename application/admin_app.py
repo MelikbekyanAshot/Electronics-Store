@@ -9,10 +9,7 @@ from database.purchases import Purchases
 from database.shipment import Shipment
 from database.storage import Storage
 from database.database import get_connection
-# from web_app import CONNECTION
 from application.base_app import Application
-
-
 
 
 class AdminApplication(Application):
