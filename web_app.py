@@ -20,9 +20,9 @@ if __name__ == '__main__':
             st.session_state['authentication_status'] is None:
         Application.authorize()
     else:
-        if st.session_state['authentication_status'] is True:
+        if st.session_state['authentication_status'] is True and st.session_state['username'] != 'admin':
             app = ConsumerApplication()
             app.run()
-        # else:
-        #     app = AdminApplication()
-        #     app.run()
+        elif st.session_state['authentication_status'] is True and st.session_state['username'] == 'admin':
+            app = AdminApplication()
+            app.run()
